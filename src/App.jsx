@@ -4,7 +4,7 @@ import Floor from './pages/Floor';
 import TakeOrder from './pages/TakeOrder';
 import TablePeople from './pages/TablePeople';
 import Login from './pages/Login';
-import WaiterProfile from './pages/WaiterProfile';
+// import WaiterProfile from './pages/WaiterProfile';
 
 const RequireAuth = ({ children }) => {
   const user = localStorage.getItem('waiter_user');
@@ -46,7 +46,7 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         <Route path="/" element={<RequireAuth><LayoutWrapper><Floor /></LayoutWrapper></RequireAuth>} />
-        <Route path="/profile" element={<RequireAuth><LayoutWrapper><WaiterProfile /></LayoutWrapper></RequireAuth>} />
+        {/* Profile is now a drawer inside Floor */}
         <Route path="/take-order/:id" element={<RequireAuth><LayoutWrapper><TakeOrder /></LayoutWrapper></RequireAuth>} />
         <Route path="/people/:id" element={<RequireAuth><LayoutWrapper><TablePeople /></LayoutWrapper></RequireAuth>} />
         <Route path="/notifications" element={<RequireAuth><LayoutWrapper><div className="container"><h1>Notificações</h1><p>Sem novos alertas.</p></div></LayoutWrapper></RequireAuth>} />

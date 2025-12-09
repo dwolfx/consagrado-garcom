@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, supabase } from '../services/api';
 import { Bell, User, ChevronRight } from 'lucide-react';
+import WaiterProfile from './WaiterProfile';
 
 const Floor = () => {
     const navigate = useNavigate();
@@ -45,6 +46,7 @@ const Floor = () => {
     });
 
     const waiter = JSON.parse(localStorage.getItem('waiter_user') || '{}');
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     return (
         <div className="container">
@@ -54,7 +56,7 @@ const Floor = () => {
                     <p style={{ opacity: 0.8 }}>Visão Geral</p>
                 </div>
                 <div
-                    onClick={() => navigate('/profile')}
+                    onClick={() => setIsProfileOpen(true)}
                     style={{
                         display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#334155',
                         padding: '0.5rem 1rem', borderRadius: '24px', cursor: 'pointer'
@@ -64,6 +66,8 @@ const Floor = () => {
                     <span style={{ fontWeight: 'bold' }}>{waiter.name || 'Garçom'}</span>
                 </div>
             </header>
+
+            <WaiterProfile isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
 
             <div style={{ display: 'grid', gap: '1rem' }}>
                 {sortedTables.map(table => (
