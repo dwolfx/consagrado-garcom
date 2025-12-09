@@ -1,0 +1,104 @@
+:root {
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --primary: #f59e0b;
+  /* Amber 500 for Waiter Alert vibe */
+  --danger: #ef4444;
+  --success: #22c55e;
+  --radius: 12px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  padding-bottom: 80px;
+  /* Safe area for bottom nav */
+}
+
+.container {
+  padding: 1rem;
+  max-width: 480px;
+  /* Optimize for mobile view even on desktop */
+  margin: 0 auto;
+}
+
+.card {
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.card-calling {
+  border: 2px solid var(--primary);
+  background-color: rgba(245, 158, 11, 0.1);
+  animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+  from {
+    border-color: var(--primary);
+  }
+
+  to {
+    border-color: transparent;
+  }
+}
+
+.btn {
+  width: 100%;
+  padding: 1rem;
+  border-radius: var(--radius);
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: black;
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--text-secondary);
+  color: var(--text-primary);
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background-color: var(--bg-secondary);
+  border-top: 1px solid #333;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  gap: 4px;
+}
+
+.nav-item.active {
+  color: var(--primary);
+}
