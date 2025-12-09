@@ -44,15 +44,18 @@ const Floor = () => {
         return a.number - b.number;
     });
 
+    const waiter = JSON.parse(localStorage.getItem('waiter_user') || '{}');
+
     return (
         <div className="container">
-            <header className="header">
+            <header className="header" style={{ marginBottom: '1.5rem' }}>
                 <div>
                     <h1>Salão</h1>
                     <p style={{ opacity: 0.8 }}>Visão Geral</p>
                 </div>
-                <div style={{ backgroundColor: '#334155', padding: '0.5rem', borderRadius: '50%' }}>
-                    <User size={24} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#334155', padding: '0.5rem 1rem', borderRadius: '24px' }}>
+                    <User size={20} />
+                    <span style={{ fontWeight: 'bold' }}>{waiter.name || 'Garçom'}</span>
                 </div>
             </header>
 
