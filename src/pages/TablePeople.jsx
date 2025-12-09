@@ -103,24 +103,47 @@ const TablePeople = () => {
             {/* List of People / Orders */}
             <div style={{ display: 'grid', gap: '1rem', marginBottom: '2rem' }}>
                 {Object.keys(ordersByPerson).length > 0 ? (
-                    Object.entries(ordersByPerson).map(([person, orders]) => (
-                        <div key={person} className="card">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', borderBottom: '1px solid #333', paddingBottom: '0.5rem' }}>
-                                <h4 style={{ textTransform: 'capitalize' }}>{person}</h4>
-                                <span style={{ color: '#94a3b8' }}>
-                                    R$ {orders.reduce((a, b) => a + (b.price * b.quantity), 0).toFixed(2)}
-                                </span>
-                            </div>
-                            {orders.map(order => (
-                                <div key={order.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
-                                    <span style={{ color: order.name.includes('CHAMAR GARÇOM') ? '#ef4444' : '#cbd5e1' }}>
-                                        {order.quantity}x {order.name}
+                    Object.entries(ordersByPerson).map(([person, orders]) => {
+                        const personSubtotal = orders.reduce((a, b) => a + (b.price * b.quantity), 0);
+                        const personServiceFee = personSubtotal * (serviceFeeOption / 100);
+                        const personAppFee = 1.99;
+                        const personTotal = personSubtotal + personServiceFee + personAppFee;
+
+                        return (
+                            <div key={person} className="card">
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', borderBottom: '1px solid #333', paddingBottom: '0.5rem' }}>
+                                    <h4 style={{ textTransform: 'capitalize' }}>{person}</h4>
+                                    <span style={{ color: 'var(--success)', fontWeight: 'bold' }}>
+                                        R$ {personTotal.toFixed(2)}
                                     </span>
-                                    <span>{order.price.toFixed(2)}</span>
                                 </div>
-                            ))}
-                        </div>
-                    ))
+
+                                {orders.map(order => (
+                                    <div key={order.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                                        <span style={{ color: order.name.includes('CHAMAR GARÇOM') ? '#ef4444' : '#cbd5e1' }}>
+                                            {order.quantity}x {order.name}
+                                        </span>
+                                        <span>{order.price.toFixed(2)}</span>
+                                    </div>
+                                ))}
+
+                                <div style={{ borderTop: '1px dashed #333', marginTop: '0.5rem', paddingTop: '0.5rem', fontSize: '0.85rem', color: '#94a3b8' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span>Subtotal</span>
+                                        <span>{personSubtotal.toFixed(2)}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span>Serviço ({serviceFeeOption}%)</span>
+                                        <span>{personServiceFee.toFixed(2)}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span>Taxa App</span>
+                                        <span>{personAppFee.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })
                 ) : (
                     <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>Nenhum pedido ainda.</p>
                 )}
