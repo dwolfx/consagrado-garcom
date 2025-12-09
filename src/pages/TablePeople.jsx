@@ -193,10 +193,10 @@ const TablePeople = () => {
 
             {/* Actions Footer - Fixed Bottom */}
             <div style={{
-                position: 'fixed', bottom: 0, left: 0, right: 0,
+                position: 'fixed', bottom: '65px', left: 0, right: 0,
                 backgroundColor: 'var(--bg-secondary)', borderTop: '1px solid #333',
                 padding: '1rem', display: 'grid', gap: '1rem',
-                zIndex: 100, maxWidth: '480px', margin: '0 auto'
+                zIndex: 90, maxWidth: '480px', margin: '0 auto'
             }}>
                 <button onClick={() => navigate(`/take-order/${table.id}`)} className="btn btn-primary btn-lg">
                     <UserPlus size={24} />
@@ -210,7 +210,7 @@ const TablePeople = () => {
             </div>
 
             {/* Spacer for Fixed Footer */}
-            <div style={{ height: '140px' }}></div>
+            <div style={{ height: '220px' }}></div>
         </div>
     );
 };
