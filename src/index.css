@@ -75,6 +75,21 @@ body {
   color: var(--text-primary);
 }
 
+.btn-danger {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+}
+
+.btn-lg {
+  padding: 1.25rem;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
 .bottom-nav {
   position: fixed;
   bottom: 0;

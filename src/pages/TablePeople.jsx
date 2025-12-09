@@ -119,14 +119,14 @@ const TablePeople = () => {
             </div>
 
             {/* Actions Area */}
-            <div style={{ display: 'grid', gap: '1rem' }}>
-                <button onClick={() => navigate(`/take-order/${table.id}`)} className="btn-primary">
-                    <UserPlus size={20} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
+            <div style={{ display: 'grid', gap: '1rem', marginTop: 'auto' }}>
+                <button onClick={() => navigate(`/take-order/${table.id}`)} className="btn btn-primary btn-lg">
+                    <UserPlus size={24} />
                     Adicionar Pedido
                 </button>
 
-                <button onClick={handleClearTable} className="btn-outline" style={{ borderColor: '#ef4444', color: '#ef4444' }}>
-                    <CheckCircle size={20} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
+                <button onClick={handleClearTable} className="btn btn-danger btn-lg">
+                    <CheckCircle size={24} />
                     Fechar Conta / Liberar Mesa
                 </button>
             </div>
