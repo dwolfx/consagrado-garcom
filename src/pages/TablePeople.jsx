@@ -196,7 +196,8 @@ const TablePeople = () => {
                 position: 'fixed', bottom: '65px', left: 0, right: 0,
                 backgroundColor: 'var(--bg-secondary)', borderTop: '1px solid #333',
                 padding: '1rem', display: 'grid', gap: '1rem',
-                zIndex: 90, maxWidth: '480px', margin: '0 auto'
+                zIndex: 90, maxWidth: '480px', margin: '0 auto',
+                borderRadius: '16px 16px 0 0', boxShadow: '0 -4px 10px rgba(0,0,0,0.3)'
             }}>
                 <button onClick={() => navigate(`/take-order/${table.id}`)} className="btn btn-primary btn-lg">
                     <UserPlus size={24} />
