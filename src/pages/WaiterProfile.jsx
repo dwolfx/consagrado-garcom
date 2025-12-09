@@ -1,4 +1,3 @@
-```javascript
 import { useNavigate } from 'react-router-dom';
 import { X, Clock, DollarSign, Award, LogOut, Calendar } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -22,10 +21,10 @@ const WaiterProfile = ({ isOpen, onClose }) => {
     return (
         <>
             {/* Backdrop */}
-            <div className={`drawer - overlay ${ isOpen ? 'open' : '' } `} onClick={onClose} />
+            <div className={`drawer-overlay ${isOpen ? 'open' : ''}`} onClick={onClose} />
 
             {/* Drawer */}
-            <div className={`drawer - content ${ isOpen ? 'open' : '' } `}>
+            <div className={`drawer-content ${isOpen ? 'open' : ''}`}>
                 <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
                     <h2>Meu Perfil</h2>
                     <button onClick={onClose} className="btn-icon" style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}>
@@ -91,4 +90,3 @@ const WaiterProfile = ({ isOpen, onClose }) => {
 };
 
 export default WaiterProfile;
-```
