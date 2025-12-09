@@ -48,7 +48,7 @@ const Floor = () => {
 
     return (
         <div className="container">
-            <header className="header" style={{ marginBottom: '1.5rem' }}>
+            <header className="header" style={{ marginBottom: '1.5rem', marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                     <h1>Salão</h1>
                     <p style={{ opacity: 0.8 }}>Visão Geral</p>
