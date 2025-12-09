@@ -35,11 +35,13 @@ const TablePeople = () => {
         return () => supabase.removeChannel(channel);
     }, [id]);
 
+    const [serviceFeeOption, setServiceFeeOption] = useState(10); // 8, 10, or 13
+
     if (loading) return <div className="container">Carregando...</div>;
     if (!table) return <div className="container">Mesa não encontrada</div>;
 
     const activeOrders = table.orders || [];
-    const total = activeOrders.reduce((acc, o) => acc + (o.price * o.quantity), 0);
+    const subtotal = activeOrders.reduce((acc, o) => acc + (o.price * o.quantity), 0);
 
     // Group orders by person
     const ordersByPerson = activeOrders.reduce((acc, order) => {
@@ -49,8 +51,14 @@ const TablePeople = () => {
         return acc;
     }, {});
 
+    // Calculate Fees
+    const peopleCount = Object.keys(ordersByPerson).length || 1;
+    const appFeeTotal = peopleCount * 1.99; // 1.99 per person/checkout
+    const serviceFee = subtotal * (serviceFeeOption / 100);
+    const total = subtotal + serviceFee + appFeeTotal;
+
     const handleClearTable = async () => {
-        if (confirm(`Deseja fechar a conta da Mesa ${table.number} e liberar a mesa?`)) {
+        if (confirm(`Total Final: R$ ${total.toFixed(2)}\nDeseja fechar a conta da Mesa ${table.number} e liberar a mesa?`)) {
             // In a real app we would archive orders. For MVP we might just delete them or mark as paid.
             // For now, let's just alert.
             alert('Mesa liberada! (Simulação)');
@@ -116,6 +124,48 @@ const TablePeople = () => {
                 ) : (
                     <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>Nenhum pedido ainda.</p>
                 )}
+            </div>
+
+            {/* Totals & Fees */}
+            <div className="card" style={{ marginBottom: '2rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                    <span style={{ color: '#94a3b8' }}>Subtotal</span>
+                    <span>R$ {subtotal.toFixed(2)}</span>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', alignItems: 'center' }}>
+                    <span style={{ color: '#94a3b8' }}>Taxa de Serviço</span>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        {[8, 10, 13].map(pct => (
+                            <button
+                                key={pct}
+                                onClick={() => setServiceFeeOption(pct)}
+                                style={{
+                                    padding: '0.25rem 0.5rem',
+                                    borderRadius: '8px',
+                                    border: '1px solid #334155',
+                                    backgroundColor: serviceFeeOption === pct ? 'var(--primary)' : 'transparent',
+                                    color: serviceFeeOption === pct ? 'black' : 'white',
+                                    fontSize: '0.8rem'
+                                }}
+                            >
+                                {pct}%
+                            </button>
+                        ))}
+                    </div>
+                    {/* Fixed Display for width consistency */}
+                    <span style={{ width: '80px', textAlign: 'right' }}>R$ {serviceFee.toFixed(2)}</span>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                    <span style={{ color: '#94a3b8' }}>Taxa do App ({peopleCount}x)</span>
+                    <span>R$ {appFeeTotal.toFixed(2)}</span>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '1rem', borderTop: '1px solid #333', fontSize: '1.25rem', fontWeight: 'bold' }}>
+                    <span>Total</span>
+                    <span style={{ color: 'var(--success)' }}>R$ {total.toFixed(2)}</span>
+                </div>
             </div>
 
             {/* Actions Area */}
