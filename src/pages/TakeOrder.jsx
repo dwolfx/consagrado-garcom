@@ -1,118 +1,106 @@
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { products, tables } from '../data/mockData';
-import { Minus, Plus, ShoppingBag, ArrowLeft, Users } from 'lucide-react';
-import { useState } from 'react';
+import { api } from '../services/api'; // Use API
+import { Minus, Plus, ShoppingCart } from 'lucide-react';
 
 const TakeOrder = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const [products, setProducts] = useState([]); // Fetch products
     const [cart, setCart] = useState({});
 
-    // Find table and prepare "Who is ordering" list
-    const table = tables.find(t => t.id === Number(id));
-    const [selectedPerson, setSelectedPerson] = useState('table'); // 'table' or personId
+    // Load products on mount
+    useEffect(() => {
+        const load = async () => {
+            const data = await api.getProducts();
+            setProducts(data);
+        };
+        load();
+    }, []);
 
-    // Mock people if empty, to test interface
-    const people = table?.people || [];
-
-    // Group items by category
-    const items = products;
-
-    const handleAdd = (productId) => {
-        setCart(prev => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
-    };
-
-    const handleRemove = (productId) => {
+    const updateQuantity = (productId, delta) => {
         setCart(prev => {
-            const next = { ...prev };
-            if (next[productId] > 0) next[productId] -= 1;
-            return next;
+            const current = prev[productId] || 0;
+            const next = Math.max(0, current + delta);
+            return { ...prev, [productId]: next };
         });
     };
 
-    const getTotalItems = () => Object.values(cart).reduce((a, b) => a + b, 0);
+    const handleSendOrder = async () => {
+        const items = Object.entries(cart)
+            .filter(([_, qty]) => qty > 0)
+            .map(([pid, qty]) => {
+                const product = products.find(p => p.id === parseInt(pid));
+                return {
+                    productId: product.id,
+                    name: product.name,
+                    price: product.price * qty,
+                    quantity: qty,
+                    status: 'pending',
+                    orderedBy: 'Garçom' // Simplification
+                };
+            });
 
-    const handleSend = () => {
-        if (getTotalItems() === 0) return;
+        if (items.length === 0) return;
 
-        const ownerName = selectedPerson === 'table'
-            ? "Mesa (Compartilhado)"
-            : people.find(p => p.id === selectedPerson)?.name;
+        // Post each item (Mock multiple posts)
+        for (const item of items) {
+            await api.addOrder(id, item);
+        }
 
-        alert(`Pedido enviado para Mesa ${id}!\nCliente: ${ownerName}`);
         navigate('/');
     };
 
-    return (
-        <div className="container" style={{ paddingBottom: '120px' }}>
-            <header style={{ marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                    <button onClick={() => navigate(-1)} className="btn-outline" style={{ width: 'auto', padding: '0.5rem' }}>
-                        <ArrowLeft size={20} />
-                    </button>
-                    <h2>Mesa {table?.number} <span style={{ fontWeight: 'normal', fontSize: '1rem', color: 'var(--text-secondary)' }}>• Novo Pedido</span></h2>
-                </div>
+    const totalItems = Object.values(cart).reduce((a, b) => a + b, 0);
 
-                {/* Customer Selector Carousel */}
-                <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
-                    <button
-                        className={`btn ${selectedPerson === 'table' ? 'btn-primary' : 'btn-outline'}`}
-                        style={{ width: 'auto', padding: '0.5rem 1rem', whiteSpace: 'nowrap' }}
-                        onClick={() => setSelectedPerson('table')}
-                    >
-                        <Users size={16} style={{ display: 'inline', marginRight: '5px' }} />
-                        Todos (Mesa)
-                    </button>
-                    {people.map(p => (
-                        <button
-                            key={p.id}
-                            className={`btn ${selectedPerson === p.id ? 'btn-primary' : 'btn-outline'}`}
-                            style={{ width: 'auto', padding: '0.5rem 1rem', whiteSpace: 'nowrap' }}
-                            onClick={() => setSelectedPerson(p.id)}
-                        >
-                            {p.avatar} {p.name}
-                        </button>
-                    ))}
+    return (
+        <div className="container" style={{ paddingBottom: '100px' }}>
+            <header className="header">
+                <div>
+                    <h1>Novo Pedido</h1>
+                    <p style={{ opacity: 0.8 }}>Mesa {id}</p>
                 </div>
             </header>
 
             <div style={{ display: 'grid', gap: '1rem' }}>
-                {items.map(item => (
-                    <div key={item.id} className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', marginBottom: 0 }}>
-                        <div style={{ flex: 1 }}>
-                            <h4 style={{ marginBottom: '0.25rem' }}>{item.name}</h4>
-                            <span style={{ color: 'var(--primary)' }}>R$ {item.price.toFixed(2)}</span>
+                {products.map(product => (
+                    <div key={product.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                            <h4>{product.name}</h4>
+                            <div style={{ color: '#94a3b8' }}>R$ {product.price.toFixed(2)}</div>
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', backgroundColor: '#111', borderRadius: '8px', padding: '4px' }}>
-                            <button
-                                onClick={() => handleRemove(item.id)}
-                                style={{ background: 'none', border: 'none', color: 'white', padding: '8px' }}
-                            >
-                                <Minus size={18} />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', backgroundColor: '#1e293b', padding: '0.25rem', borderRadius: '8px' }}>
+                            <button onClick={() => updateQuantity(product.id, -1)} className="btn-icon">
+                                <Minus size={16} />
                             </button>
                             <span style={{ minWidth: '20px', textAlign: 'center', fontWeight: 'bold' }}>
-                                {cart[item.id] || 0}
+                                {cart[product.id] || 0}
                             </span>
-                            <button
-                                onClick={() => handleAdd(item.id)}
-                                style={{ background: 'none', border: 'none', color: 'var(--primary)', padding: '8px' }}
-                            >
-                                <Plus size={18} />
+                            <button onClick={() => updateQuantity(product.id, 1)} className="btn-icon">
+                                <Plus size={16} />
                             </button>
                         </div>
                     </div>
                 ))}
             </div>
 
-            {/* Bottom Floating Action Bar */}
-            {getTotalItems() > 0 && (
+            {totalItems > 0 && (
                 <div style={{
-                    position: 'fixed', bottom: '70px', left: '1rem', right: '1rem', zIndex: 90
+                    position: 'fixed', bottom: '90px', left: '1rem', right: '1rem',
+                    backgroundColor: '#3b82f6', borderRadius: '12px', padding: '1rem',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)'
                 }}>
-                    <button onClick={handleSend} className="btn-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
-                        <ShoppingBag size={20} />
-                        Enviar {getTotalItems()} Itens
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <ShoppingCart size={24} color="white" />
+                        <span style={{ fontWeight: 'bold', color: 'white' }}>{totalItems} itens</span>
+                    </div>
+                    <button onClick={handleSendOrder} style={{
+                        backgroundColor: 'white', color: '#3b82f6', border: 'none',
+                        padding: '0.5rem 1rem', borderRadius: '8px', fontWeight: 'bold'
+                    }}>
+                        Enviar
                     </button>
                 </div>
             )}
