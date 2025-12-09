@@ -202,29 +202,29 @@ const TablePeople = () => {
                     </div>
                 </div>
 
-                {/* Actions Footer - Fixed Bottom */}
-                <div style={{
-                    position: 'fixed', bottom: '65px', left: 0, right: 0,
-                    backgroundColor: 'var(--bg-secondary)', borderTop: '1px solid #333',
-                    padding: '1rem', display: 'grid', gap: '1rem',
-                    zIndex: 90, maxWidth: '480px', margin: '0 auto',
-                    borderRadius: '16px 16px 0 0', boxShadow: '0 -4px 10px rgba(0,0,0,0.3)'
-                }}>
-                    <button onClick={() => navigate(`/take-order/${table.id}`)} className="btn btn-primary btn-lg">
-                        <UserPlus size={24} />
-                        Adicionar Pedido
-                    </button>
-
-                    <button onClick={handleClearTable} className="btn btn-danger btn-lg">
-                        <CheckCircle size={24} />
-                        Fechar Conta / Liberar Mesa
-                    </button>
-                </div>
-
                 {/* Spacer for Fixed Footer */}
                 <div style={{ height: '220px' }}></div>
-            </div> {/* Close padding div */}
-        </div> {/* Close container div */ }
+            </div>
+
+            {/* Actions Footer - Fixed Bottom */}
+            <div style={{
+                position: 'fixed', bottom: '65px', left: 0, right: 0,
+                backgroundColor: 'var(--bg-secondary)', borderTop: '1px solid #333',
+                padding: '1rem', display: 'grid', gap: '1rem',
+                zIndex: 90, maxWidth: '480px', margin: '0 auto',
+                borderRadius: '16px 16px 0 0', boxShadow: '0 -4px 10px rgba(0,0,0,0.3)'
+            }}>
+                <button onClick={() => navigate(`/take-order/${table.id}`)} className="btn btn-primary btn-lg">
+                    <UserPlus size={24} />
+                    Adicionar Pedido
+                </button>
+
+                <button onClick={handleClearTable} className="btn btn-danger btn-lg">
+                    <CheckCircle size={24} />
+                    Fechar Conta / Liberar Mesa
+                </button>
+            </div>
+        </div>
     );
 };
 
