@@ -53,7 +53,13 @@ const Floor = () => {
                     <h1>Salão</h1>
                     <p style={{ opacity: 0.8 }}>Visão Geral</p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#334155', padding: '0.5rem 1rem', borderRadius: '24px' }}>
+                <div
+                    onClick={() => navigate('/profile')}
+                    style={{
+                        display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#334155',
+                        padding: '0.5rem 1rem', borderRadius: '24px', cursor: 'pointer'
+                    }}
+                >
                     <User size={20} />
                     <span style={{ fontWeight: 'bold' }}>{waiter.name || 'Garçom'}</span>
                 </div>

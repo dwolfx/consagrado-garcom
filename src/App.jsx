@@ -1,9 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom';
-import { Users, ClipboardList, Bell, LogOut } from 'lucide-react';
+import { Users, ClipboardList, Bell, User } from 'lucide-react';
 import Floor from './pages/Floor';
 import TakeOrder from './pages/TakeOrder';
 import TablePeople from './pages/TablePeople';
 import Login from './pages/Login';
+import WaiterProfile from './pages/WaiterProfile';
 
 const RequireAuth = ({ children }) => {
   const user = localStorage.getItem('waiter_user');
@@ -12,19 +13,9 @@ const RequireAuth = ({ children }) => {
 };
 
 const Layout = ({ children }) => {
-  const handleLogout = () => {
-    localStorage.removeItem('waiter_user');
-    window.location.href = '/login';
-  };
-
   return (
     <>
       <div style={{ paddingBottom: '80px' }}>
-        <div style={{ padding: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
-          <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}>
-            <LogOut size={20} />
-          </button>
-        </div>
         {children}
       </div>
 
@@ -55,6 +46,7 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         <Route path="/" element={<RequireAuth><LayoutWrapper><Floor /></LayoutWrapper></RequireAuth>} />
+        <Route path="/profile" element={<RequireAuth><LayoutWrapper><WaiterProfile /></LayoutWrapper></RequireAuth>} />
         <Route path="/take-order/:id" element={<RequireAuth><LayoutWrapper><TakeOrder /></LayoutWrapper></RequireAuth>} />
         <Route path="/people/:id" element={<RequireAuth><LayoutWrapper><TablePeople /></LayoutWrapper></RequireAuth>} />
         <Route path="/notifications" element={<RequireAuth><LayoutWrapper><div className="container"><h1>Notificações</h1><p>Sem novos alertas.</p></div></LayoutWrapper></RequireAuth>} />
