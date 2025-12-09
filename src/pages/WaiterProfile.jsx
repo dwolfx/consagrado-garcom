@@ -72,7 +72,7 @@ const WaiterProfile = () => {
                 </div>
             </div>
 
-            <button onClick={handleLogout} className="btn-outline" style={{ marginTop: '2rem', color: '#ef4444', borderColor: '#ef4444' }}>
+            <button onClick={handleLogout} className="btn" style={{ marginTop: '2rem', backgroundColor: 'transparent', color: '#ef4444', border: 'none' }}>
                 <LogOut size={20} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
                 Sair do Turno (Logout)
             </button>
