@@ -10,7 +10,18 @@ const Floor = () => {
     useEffect(() => {
         const load = async () => {
             const data = await api.getTables();
-            setTables(data);
+            // Process tables to add helper flags
+            const processed = data.map(t => ({
+                ...t,
+                callWaiter: t.orders?.some(o => o.name === '🔔 CHAMAR GARÇOM' && o.status !== 'completed'),
+                total: t.orders?.reduce((acc, o) => acc + (o.price * o.quantity), 0) || 0,
+                peopleCount: t.orders?.reduce((acc, o) => {
+                    // Rough estimate of people based on unique orderers or just default
+                    const unique = new Set(t.orders.map(or => or.ordered_by));
+                    return unique.size || 0;
+                }, 0)
+            }));
+            setTables(processed);
         };
         load();
 
@@ -60,7 +71,7 @@ const Floor = () => {
                                 <div>
                                     <h3 style={{ fontSize: '1.25rem' }}>Mesa {table.number}</h3>
                                     <div style={{ fontSize: '0.875rem', color: '#94a3b8' }}>
-                                        {table.status === 'free' ? 'Livre' : `${table.people?.length || 2} Pessoas • R$ ${(table.orders?.reduce((acc, o) => acc + o.price, 0) || 0).toFixed(2)}`}
+                                        {table.status === 'free' ? 'Livre' : `${table.peopleCount || 2} Pessoas • R$ ${table.total.toFixed(2)}`}
                                     </div>
                                 </div>
                             </div>

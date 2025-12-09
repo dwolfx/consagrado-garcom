@@ -1,107 +1,135 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { tables } from '../data/mockData';
-import { ArrowLeft, UserPlus, Search, User } from 'lucide-react';
-import { useState } from 'react';
+import { api, supabase } from '../services/api';
+import { ArrowLeft, UserPlus, Search, Receipt, CheckCircle, Trash2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const TablePeople = () => {
-    const { id } = useParams();
+    const { id } = useParams(); // Start using ID as table ID
     const navigate = useNavigate();
-    const table = tables.find(t => t.id === Number(id));
+    const [table, setTable] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    // Local state for adding people
+    // Local state for adding people (Mock for now as backend doesn't support Guest List yet)
     const [mode, setMode] = useState('view'); // view, add-guest, add-cpf
     const [inputValue, setInputValue] = useState('');
 
-    if (!table) return <div>Mesa não encontrada</div>;
-
-    const handleAddGuest = () => {
-        alert(`Convidado "${inputValue}" adicionado à mesa!`);
-        setMode('view');
-        setInputValue('');
-        // In a real app, this would update backend state
+    const loadTable = async () => {
+        try {
+            const data = await api.getTable(id);
+            setTable(data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleSearchCPF = () => {
-        alert(`Cliente com CPF ${inputValue} encontrado e adicionado!`);
-        setMode('view');
-        setInputValue('');
+    useEffect(() => {
+        loadTable();
+        // Realtime Subscription for this table
+        const channel = supabase
+            .channel(`table-${id}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `table_id=eq.${id}` }, () => loadTable())
+            .subscribe();
+
+        return () => supabase.removeChannel(channel);
+    }, [id]);
+
+    if (loading) return <div className="container">Carregando...</div>;
+    if (!table) return <div className="container">Mesa não encontrada</div>;
+
+    const activeOrders = table.orders || [];
+    const total = activeOrders.reduce((acc, o) => acc + (o.price * o.quantity), 0);
+
+    // Group orders by person
+    const ordersByPerson = activeOrders.reduce((acc, order) => {
+        const person = order.ordered_by || 'Desconhecido';
+        if (!acc[person]) acc[person] = [];
+        acc[person].push(order);
+        return acc;
+    }, {});
+
+    const handleClearTable = async () => {
+        if (confirm(`Deseja fechar a conta da Mesa ${table.number} e liberar a mesa?`)) {
+            // In a real app we would archive orders. For MVP we might just delete them or mark as paid.
+            // For now, let's just alert.
+            alert('Mesa liberada! (Simulação)');
+            navigate('/');
+        }
+    };
+
+    // Helper to resolve Call Waiter
+    const callWaiterItem = activeOrders.find(o => o.name === '🔔 CHAMAR GARÇOM');
+    const handleResolveCall = async () => {
+        if (callWaiterItem) {
+            // Delete the item to "resolve" it
+            await supabase.from('orders').delete().eq('id', callWaiterItem.id);
+            alert('Solicitação atendida!');
+            loadTable();
+        }
     };
 
     return (
         <div className="container">
-            <header style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-                <button onClick={() => navigate(-1)} className="btn-outline" style={{ width: 'auto', padding: '0.5rem' }}>
-                    <ArrowLeft size={20} />
-                </button>
-                <h2>Mesa {table.number} <span style={{ fontWeight: 'normal', fontSize: '1rem', color: 'var(--text-secondary)' }}>• Pessoas</span></h2>
+            <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <button onClick={() => navigate(-1)} className="btn-outline" style={{ width: 'auto', padding: '0.5rem' }}>
+                        <ArrowLeft size={20} />
+                    </button>
+                    <h2>Mesa {table.number}</h2>
+                </div>
+                <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--success)' }}>
+                    R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </div>
             </header>
 
-            {/* List of People */}
+            {callWaiterItem && (
+                <div className="card pulse" style={{ backgroundColor: '#ef4444', color: 'white', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: 'bold' }}>🔔 Cliente chamando!</span>
+                    <button onClick={handleResolveCall} className="btn-ghost" style={{ background: 'white', color: '#ef4444', padding: '0.5rem 1rem' }}>
+                        Atender
+                    </button>
+                </div>
+            )}
+
+            {/* List of People / Orders */}
             <div style={{ display: 'grid', gap: '1rem', marginBottom: '2rem' }}>
-                {table.people && table.people.length > 0 ? (
-                    table.people.map(person => (
-                        <div key={person.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: 0 }}>
-                            <div style={{ fontSize: '1.5rem' }}>{person.avatar}</div>
-                            <div>
-                                <h4>{person.name}</h4>
-                                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                                    {person.type === 'app' ? 'App User' : 'Convidado'}
+                {Object.keys(ordersByPerson).length > 0 ? (
+                    Object.entries(ordersByPerson).map(([person, orders]) => (
+                        <div key={person} className="card">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', borderBottom: '1px solid #333', paddingBottom: '0.5rem' }}>
+                                <h4 style={{ textTransform: 'capitalize' }}>{person}</h4>
+                                <span style={{ color: '#94a3b8' }}>
+                                    R$ {orders.reduce((a, b) => a + (b.price * b.quantity), 0).toFixed(2)}
                                 </span>
                             </div>
+                            {orders.map(order => (
+                                <div key={order.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                                    <span style={{ color: order.name.includes('CHAMAR GARÇOM') ? '#ef4444' : '#cbd5e1' }}>
+                                        {order.quantity}x {order.name}
+                                    </span>
+                                    <span>{order.price.toFixed(2)}</span>
+                                </div>
+                            ))}
                         </div>
                     ))
                 ) : (
-                    <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>Ninguém na mesa ainda.</p>
+                    <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>Nenhum pedido ainda.</p>
                 )}
             </div>
 
             {/* Actions Area */}
-            {mode === 'view' && (
-                <div style={{ display: 'grid', gap: '1rem' }}>
-                    <button onClick={() => setMode('add-cpf')} className="btn-primary">
-                        <Search size={20} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                        Buscar por CPF
-                    </button>
-                    <button onClick={() => setMode('add-guest')} className="btn-outline">
-                        <UserPlus size={20} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                        Adicionar Convidado (Nome)
-                    </button>
-                </div>
-            )}
+            <div style={{ display: 'grid', gap: '1rem' }}>
+                <button onClick={() => navigate(`/take-order/${table.id}`)} className="btn-primary">
+                    <UserPlus size={20} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
+                    Adicionar Pedido
+                </button>
 
-            {mode === 'add-guest' && (
-                <div className="card">
-                    <h3 style={{ marginBottom: '1rem' }}>Novo Convidado</h3>
-                    <input
-                        type="text"
-                        placeholder="Nome do convidado"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        style={{ width: '100%', padding: '0.75rem', marginBottom: '1rem', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#111', color: 'white' }}
-                    />
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button onClick={() => setMode('view')} className="btn-outline">Cancelar</button>
-                        <button onClick={handleAddGuest} className="btn-primary">Adicionar</button>
-                    </div>
-                </div>
-            )}
-
-            {mode === 'add-cpf' && (
-                <div className="card">
-                    <h3 style={{ marginBottom: '1rem' }}>Buscar Cliente</h3>
-                    <input
-                        type="tel"
-                        placeholder="CPF do cliente"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        style={{ width: '100%', padding: '0.75rem', marginBottom: '1rem', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#111', color: 'white' }}
-                    />
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button onClick={() => setMode('view')} className="btn-outline">Cancelar</button>
-                        <button onClick={handleSearchCPF} className="btn-primary">Buscar</button>
-                    </div>
-                </div>
-            )}
+                <button onClick={handleClearTable} className="btn-outline" style={{ borderColor: '#ef4444', color: '#ef4444' }}>
+                    <CheckCircle size={20} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
+                    Fechar Conta / Liberar Mesa
+                </button>
+            </div>
         </div>
     );
 };
