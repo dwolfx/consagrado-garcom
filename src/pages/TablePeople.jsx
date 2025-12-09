@@ -223,8 +223,9 @@ const TablePeople = () => {
 
                 {/* Spacer for Fixed Footer */}
                 <div style={{ height: '220px' }}></div>
-            </div>
-            );
+            </div> {/* Close padding div */}
+        </div> {/* Close container div */ }
+    );
 };
 
-            export default TablePeople;
+export default TablePeople;
