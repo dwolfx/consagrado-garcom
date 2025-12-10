@@ -48,7 +48,7 @@ function App() {
         <Route path="/" element={<RequireAuth><LayoutWrapper><Floor /></LayoutWrapper></RequireAuth>} />
         {/* Profile is now a drawer inside Floor */}
         <Route path="/take-order/:id" element={<RequireAuth><LayoutWrapper><TakeOrder /></LayoutWrapper></RequireAuth>} />
-        <Route path="/people/:id" element={<RequireAuth><LayoutWrapper><TablePeople /></LayoutWrapper></RequireAuth>} />
+        <Route path="/mesa/:id" element={<RequireAuth><LayoutWrapper><TablePeople /></LayoutWrapper></RequireAuth>} />
         <Route path="/notifications" element={<RequireAuth><LayoutWrapper><div className="container"><h1>Notificações</h1><p>Sem novos alertas.</p></div></LayoutWrapper></RequireAuth>} />
       </Routes>
     </Router>

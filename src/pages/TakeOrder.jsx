@@ -85,7 +85,7 @@ const TakeOrder = () => {
             if (error) throw error;
 
             alert('Pedido enviado com sucesso!');
-            navigate(`/people/${id}`); // Go back to table view
+            navigate(`/mesa/${id}`); // Go back to table view
         } catch (error) {
             console.error('Error sending order:', error);
             alert('Erro ao enviar pedido.');
