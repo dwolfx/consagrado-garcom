@@ -82,10 +82,11 @@ const TablePeople = () => {
             {/* Fixed Header */}
             <header style={{
                 position: 'fixed', top: 0, left: 0, right: 0, zIndex: 90,
-                backgroundColor: 'rgba(30, 41, 59, 0.95)', backdropFilter: 'blur(8px)',
+                backgroundColor: 'var(--bg-secondary)', backdropFilter: 'blur(8px)',
                 borderBottom: '1px solid #333', padding: '1rem',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                maxWidth: '480px', margin: '0 auto'
+                maxWidth: '480px', margin: '0 auto',
+                borderRadius: '0 0 16px 16px', boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: 'white', padding: '0.5rem', cursor: 'pointer' }}>
