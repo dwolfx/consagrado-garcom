@@ -23,11 +23,15 @@ const TakeOrder = () => {
     const loadMenu = async () => {
         try {
             const data = await api.getCategories();
-            if (data && data.length > 0) {
+            // Check if we have categories AND at least one product
+            const hasProducts = data && data.some(cat => cat.products && cat.products.length > 0);
+
+            if (hasProducts) {
                 setCategories(data);
-                setSelectedCategory(data[0].id);
+                if (data.length > 0) setSelectedCategory(data[0].id);
             } else {
-                // Mock for testing if DB is empty
+                console.log('No real products found, using mock data.');
+                // Mock for testing if DB is empty or has no products
                 const MOCK_CATEGORIES = [
                     { id: 1, name: 'Bebidas', products: [{ id: 101, name: 'Heineken 600ml', price: 18.00 }, { id: 102, name: 'Coca-Cola', price: 6.00 }, { id: 103, name: 'Água Mineral', price: 4.00 }] },
                     { id: 2, name: 'Petiscos', products: [{ id: 201, name: 'Batata Frita', price: 25.00 }, { id: 202, name: 'Isca de Peixe', price: 45.00 }, { id: 203, name: 'Calabresa', price: 32.00 }] },
@@ -89,7 +93,7 @@ const TakeOrder = () => {
     };
 
     const filteredProducts = search.trim() !== ''
-        ? categories.flatMap(c => c.products).filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
+        ? categories.flatMap(c => c.products || []).filter(p => p && p.name && p.name.toLowerCase().includes(search.toLowerCase()))
         : (selectedCategory
             ? categories.find(c => c.id === selectedCategory)?.products || []
             : []);
