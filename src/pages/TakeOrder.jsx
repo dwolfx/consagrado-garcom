@@ -77,9 +77,11 @@ const TakeOrder = () => {
         }
     };
 
-    const filteredProducts = selectedCategory
-        ? categories.find(c => c.id === selectedCategory)?.products.filter(p => p.name.toLowerCase().includes(search.toLowerCase())) || []
-        : [];
+    const filteredProducts = search.trim() !== ''
+        ? categories.flatMap(c => c.products).filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
+        : (selectedCategory
+            ? categories.find(c => c.id === selectedCategory)?.products || []
+            : []);
 
     return (
         <div className="container" style={{ padding: 0 }}>
