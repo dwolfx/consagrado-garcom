@@ -23,8 +23,19 @@ const TakeOrder = () => {
     const loadMenu = async () => {
         try {
             const data = await api.getCategories();
-            setCategories(data);
-            if (data.length > 0) setSelectedCategory(data[0].id);
+            if (data && data.length > 0) {
+                setCategories(data);
+                setSelectedCategory(data[0].id);
+            } else {
+                // Mock for testing if DB is empty
+                const MOCK_CATEGORIES = [
+                    { id: 1, name: 'Bebidas', products: [{ id: 101, name: 'Heineken 600ml', price: 18.00 }, { id: 102, name: 'Coca-Cola', price: 6.00 }, { id: 103, name: 'Água Mineral', price: 4.00 }] },
+                    { id: 2, name: 'Petiscos', products: [{ id: 201, name: 'Batata Frita', price: 25.00 }, { id: 202, name: 'Isca de Peixe', price: 45.00 }, { id: 203, name: 'Calabresa', price: 32.00 }] },
+                    { id: 3, name: 'Pratos', products: [{ id: 301, name: 'Parmegiana', price: 59.90 }, { id: 302, name: 'Picanha', price: 89.90 }] }
+                ];
+                setCategories(MOCK_CATEGORIES);
+                setSelectedCategory(MOCK_CATEGORIES[0].id);
+            }
         } catch (error) {
             console.error('Error loading menu:', error);
         }
@@ -112,14 +123,20 @@ const TakeOrder = () => {
             {/* Categories & Search */}
             <div style={{ padding: '1rem' }}>
                 <div style={{ position: 'relative', marginBottom: '1rem' }}>
-                    <Search style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={20} />
+                    <Search style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={24} />
                     <input
                         type="text"
                         placeholder="Buscar produto..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="input-field"
-                        style={{ paddingLeft: '3rem', marginBottom: 0 }}
+                        style={{
+                            paddingLeft: '3rem',
+                            marginBottom: 0,
+                            height: '54px',
+                            fontSize: '1.1rem',
+                            borderRadius: '12px'
+                        }}
                     />
                 </div>
 
