@@ -50,6 +50,9 @@ function App() {
         <Route path="/take-order/:id" element={<RequireAuth><LayoutWrapper><TakeOrder /></LayoutWrapper></RequireAuth>} />
         <Route path="/mesa/:id" element={<RequireAuth><LayoutWrapper><TablePeople /></LayoutWrapper></RequireAuth>} />
         <Route path="/notifications" element={<RequireAuth><LayoutWrapper><div className="container"><h1>Notificações</h1><p>Sem novos alertas.</p></div></LayoutWrapper></RequireAuth>} />
+
+        {/* Catch all - Redirect to Home */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
