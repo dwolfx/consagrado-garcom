@@ -204,7 +204,7 @@ const TablePeople = () => {
                 </div>
 
                 {/* Spacer to prevent content from being hidden behind fixed footer */}
-                <div style={{ height: '200px' }}></div>
+                <div style={{ height: '70px' }}></div>
             </div>
 
             {/* Actions Footer - Fixed Bottom */}
