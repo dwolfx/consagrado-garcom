@@ -34,6 +34,20 @@ export const api = {
         if (error) console.error('Error fetching table', error);
         return data;
     },
+
+    getCategories: async () => {
+        // Fetch categories and their products
+        const { data, error } = await supabase
+            .from('categories')
+            .select(`
+                *,
+                products (
+                    *
+                )
+            `);
+        if (error) throw error;
+        return data;
+    },
     // Orders
     addOrder: async (tableId, orderItem) => {
         // Just insert into orders table. Realtime triggers will handle the rest.
