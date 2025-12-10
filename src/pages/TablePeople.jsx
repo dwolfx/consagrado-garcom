@@ -203,8 +203,7 @@ const TablePeople = () => {
                     </div>
                 </div>
 
-                {/* Spacer for Fixed Footer */}
-                <div style={{ height: '220px' }}></div>
+
             </div>
 
             {/* Actions Footer - Fixed Bottom */}
