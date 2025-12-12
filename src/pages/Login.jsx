@@ -1,83 +1,202 @@
+```javascript
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Delete, ChevronRight } from 'lucide-react';
+import { supabase } from '../services/api';
+import { User, Lock, Keypad, ArrowRight, CheckCircle } from 'lucide-react';
 
 const Login = () => {
     const navigate = useNavigate();
-    const [pin, setPin] = useState('');
-    const [error, setError] = useState(false);
+    const [step, setStep] = useState(1); // 1: Auth, 2: Check-in
+    
+    // Step 1: Auth
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    
+    // Step 2: Check-in
+    const [dailyCode, setDailyCode] = useState('');
 
-    const handleNumberForPin = (num) => {
-        if (pin.length < 4) {
-            setPin(prev => prev + num);
-            setError(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleAuth = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+        
+        try {
+            // Demo Bypass
+            if (email === 'garcom@demo.com' && password === 'demo') {
+                const fakeUser = {
+                    id: '11111111-1111-1111-1111-111111111111',
+                    email: 'garcom@demo.com',
+                    name: 'Garçom Zé'
+                };
+                localStorage.setItem('waiter_user', JSON.stringify(fakeUser));
+                setStep(2);
+                return;
+            }
+
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) throw error;
+
+            if (data.user) {
+                // Fetch profile
+                const { data: profile } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('id', data.user.id)
+                    .single();
+                
+                localStorage.setItem('waiter_user', JSON.stringify(profile));
+                setStep(2);
+            }
+        } catch (err) {
+            console.error(err);
+            setError('Login falhou. Verifique suas credenciais.');
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handleDelete = () => {
-        setPin(prev => prev.slice(0, -1));
-    };
+    const handleCheckIn = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
 
-    const handleLogin = () => {
-        // Mock PIN Check
-        if (pin === '1234') { // Default mock PIN
-            localStorage.setItem('waiter_user', JSON.stringify({ name: 'João', id: 1 }));
+        try {
+            // Verify Code logic (Same as B2B)
+            const today = new Date();
+            const dateStr = today.toISOString().split('T')[0].replace(/-/g, '');
+            const seed = parseInt(dateStr);
+            const validCode = ((seed * 9301 + 49297) % 10000).toString().padStart(4, '0');
+
+            if (dailyCode !== validCode) {
+                throw new Error('Código do turno inválido.');
+            }
+
+            // Success! Start Shift
+            const user = JSON.parse(localStorage.getItem('waiter_user'));
+            
+            // Update User Status
+            await supabase
+                .from('users')
+                .update({ 
+                    is_working_now: true,
+                    shift_start: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                    // shift_end: We could set a default here or let manager set it. 
+                    // For now, let's assume default 8h shift or manual set.
+                    shift_end: '02:00' // Default Mock close time
+                })
+                .eq('id', user.id);
+
             navigate('/');
-        } else {
-            setError(true);
-            setPin('');
+        } catch (err) {
+            console.error(err);
+            setError('Código inválido. Peça ao gerente.');
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="container" style={{
+        <div style={{
             height: '100vh', display: 'flex', flexDirection: 'column',
-            justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a'
+            alignItems: 'center', justifyContent: 'center',
+            background: 'var(--bg-primary)', color: 'var(--text-primary)', padding: '2rem'
         }}>
-            <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                 <div style={{
-                    width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#3b82f6',
+                    background: 'var(--primary)', width: '64px', height: '64px', borderRadius: '16px',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem',
-                    boxShadow: '0 0 20px rgba(59, 130, 246, 0.5)'
+                    boxShadow: '0 4px 20px rgba(99, 102, 241, 0.4)'
                 }}>
-                    <User size={40} color="white" />
+                    {step === 1 ? <User size={32} color="white" /> : <Keypad size={32} color="white" />}
                 </div>
-                <h2>Acesso Garçom</h2>
-                <p style={{ color: '#64748b' }}>Digite seu PIN de 4 dígitos</p>
+                <h1>{step === 1 ? 'Bem-vindo' : 'Iniciar Turno'}</h1>
+                <p style={{ color: 'var(--text-secondary)' }}>
+                    {step === 1 ? 'Faça login para continuar.' : 'Digite o código do dia para fazer check-in.'}
+                </p>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-                {[0, 1, 2, 3].map(i => (
-                    <div key={i} style={{
-                        width: '15px', height: '15px', borderRadius: '50%',
-                        backgroundColor: i < pin.length ? '#3b82f6' : '#334155',
-                        border: error ? '1px solid #ef4444' : 'none'
-                    }} />
-                ))}
-            </div>
+            {error && (
+                <div style={{ backgroundColor: '#fee2e2', color: '#ef4444', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem', width: '100%', textAlign: 'center' }}>
+                    {error}
+                </div>
+            )}
 
-            {error && <p style={{ color: '#ef4444', marginBottom: '1rem' }}>PIN Incorreto</p>}
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
-                    <button key={num} onClick={() => handleNumberForPin(num)} className="btn-outline" style={{ width: '70px', height: '70px', fontSize: '1.5rem', borderRadius: '50%', border: '1px solid #334155', color: 'white' }}>
-                        {num}
+            {step === 1 ? (
+                <form onSubmit={handleAuth} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div className="input-group">
+                        <User size={20} color="#94a3b8" />
+                        <input 
+                            type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required 
+                            style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', padding: '0.5rem', color: 'var(--text-primary)' }}
+                        />
+                    </div>
+                    <div className="input-group">
+                        <Lock size={20} color="#94a3b8" />
+                        <input 
+                            type="password" placeholder="Senha" value={password} onChange={e => setPassword(e.target.value)} required
+                            style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', padding: '0.5rem', color: 'var(--text-primary)' }}
+                        />
+                    </div>
+                    <button type="submit" className="btn-primary" disabled={loading} style={{ justifyContent: 'center' }}>
+                        {loading ? 'Acessando...' : 'Entrar'} <ArrowRight size={20} />
                     </button>
-                ))}
-                <button onClick={handleDelete} className="btn-outline" style={{ widht: '70px', height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', border: '1px solid #334155', color: '#ef4444' }}>
-                    <Delete size={24} />
-                </button>
-                <button onClick={() => handleNumberForPin(0)} className="btn-outline" style={{ width: '70px', height: '70px', fontSize: '1.5rem', borderRadius: '50%', border: '1px solid #334155', color: 'white' }}>
-                    0
-                </button>
-                <button onClick={handleLogin} className="btn-primary" style={{ width: '70px', height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>
-                    <ChevronRight size={32} />
-                </button>
-            </div>
+                    <p style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '1rem' }}>
+                        Garçom Demo: garcom@demo.com / demo
+                    </p>
+                </form>
+            ) : (
+                <form onSubmit={handleCheckIn} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                     <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+                        {[0, 1, 2, 3].map((_, i) => (
+                            <input
+                                key={i}
+                                type="text"
+                                maxLength={1}
+                                value={dailyCode[i] || ''}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (!/^\d*$/.test(val)) return;
+                                    const newCode = dailyCode.split('');
+                                    newCode[i] = val;
+                                    setDailyCode(newCode.join(''));
+                                    // Auto focus next logic could go here but keeping it simple
+                                    if(val && e.target.nextSibling) e.target.nextSibling.focus();
+                                }}
+                                style={{
+                                    width: '60px', height: '80px', fontSize: '2rem', textAlign: 'center',
+                                    borderRadius: '12px', border: '2px solid var(--border-color)',
+                                    background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontWeight: 'bold'
+                                }}
+                            />
+                        ))}
+                    </div>
+                    
+                    <button type="submit" className="btn-primary" disabled={loading || dailyCode.length < 4} style={{ marginTop: '1rem', justifyContent: 'center' }}>
+                        {loading ? 'Validando...' : 'Fazer Check-in'} <CheckCircle size={20} />
+                    </button>
+                </form>
+            )}
 
-            <p style={{ marginTop: '2rem', fontSize: '0.75rem', color: '#475569' }}>PIN Padrão: 1234</p>
+            {/* CSS Helper for Inputs */}
+            <style>{`
+    .input - group {
+    display: flex; alignItems: center; gap: 0.5rem;
+    background: var(--bg - secondary); padding: 1rem;
+    borderRadius: 12px; border: 1px solid var(--border - color);
+}
+                .btn - primary {
+    background: var(--primary); color: white; padding: 1rem;
+    borderRadius: 12px; border: none; font - weight: bold; font - size: 1rem;
+    cursor: pointer; display: flex; alignItems: center; gap: 0.5rem; transition: 0.2s;
+}
+                .btn - primary:disabled { opacity: 0.7; cursor: not - allowed; }
+`}</style>
         </div>
     );
 };
 
 export default Login;
+```
