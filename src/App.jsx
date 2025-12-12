@@ -1,10 +1,9 @@
-import { HashRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { Users, ClipboardList, Bell, User } from 'lucide-react';
 import Floor from './pages/Floor';
 import TakeOrder from './pages/TakeOrder';
 import TablePeople from './pages/TablePeople';
 import Login from './pages/Login';
-// import WaiterProfile from './pages/WaiterProfile';
 
 const RequireAuth = ({ children }) => {
   const user = localStorage.getItem('waiter_user');
