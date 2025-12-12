@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { Users, ClipboardList, Bell, User } from 'lucide-react';
 import Floor from './pages/Floor';
 import TakeOrder from './pages/TakeOrder';

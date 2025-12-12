@@ -64,35 +64,32 @@ const Login = () => {
         setError('');
 
         try {
-            // Verify Code logic (Same as B2B)
-            const today = new Date();
-            const dateStr = today.toISOString().split('T')[0].replace(/-/g, '');
-            const seed = parseInt(dateStr);
-            const validCode = ((seed * 9301 + 49297) % 10000).toString().padStart(4, '0');
-
-            if (dailyCode !== validCode) {
-                throw new Error('Código do turno inválido.');
-            }
-
-            // Success! Start Shift
             const user = JSON.parse(localStorage.getItem('waiter_user'));
             
-            // Update User Status
-            await supabase
-                .from('users')
-                .update({ 
-                    is_working_now: true,
-                    shift_start: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                    // shift_end: We could set a default here or let manager set it. 
-                    // For now, let's assume default 8h shift or manual set.
-                    shift_end: '02:00' // Default Mock close time
-                })
-                .eq('id', user.id);
+            // SECURITY UPDATE: Server-side validation via RPC
+            const { data: success, error: rpcError } = await supabase.rpc('check_in_waiter', { 
+                waiter_id: user.id,
+                input_code: dailyCode 
+            });
+
+            if (rpcError) throw rpcError;
+
+            if (!success) {
+                throw new Error('Código incorreto. Verifique com o gerente.');
+            }
+
+            // If success, user is already updated in DB `users` by the RPC.
+            // Just update local storage if needed or just nav.
+            const updatedUser = { 
+                ...user, 
+                shift_start: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) 
+            };
+            localStorage.setItem('waiter_user', JSON.stringify(updatedUser)); // Optimistic update
 
             navigate('/');
         } catch (err) {
             console.error(err);
-            setError('Código inválido. Peça ao gerente.');
+            setError(err.message || 'Erro ao validar código.');
         } finally {
             setLoading(false);
         }
