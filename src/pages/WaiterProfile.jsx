@@ -7,8 +7,14 @@ const WaiterProfile = ({ isOpen, onClose }) => {
     const [waiter, setWaiter] = useState({});
 
     useEffect(() => {
-        const user = JSON.parse(localStorage.getItem('waiter_user') || '{}');
-        setWaiter(user);
+        if (isOpen) {
+            // Just wrapped in an async-like timeout to avoid sync update warning for now, 
+            // or just load directly when isOpen changes if needed
+            setTimeout(() => {
+                const user = JSON.parse(localStorage.getItem('waiter_user') || '{}');
+                setWaiter(user);
+            }, 0);
+        }
     }, [isOpen]); // Reload when opened
 
     const handleLogout = () => {

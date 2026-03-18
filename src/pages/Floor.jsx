@@ -60,16 +60,15 @@ const Floor = () => {
     const navigate = useNavigate();
     const [tables, setTables] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [waiter, setWaiter] = useState(null);
+    // Start with session pre-loaded to avoid synchronous setStates in useEffect
+    const initialWaiter = JSON.parse(localStorage.getItem('waiter_user') || 'null');
+    const [waiter] = useState(initialWaiter);
 
     useEffect(() => {
-        // Load User Session
-        const session = localStorage.getItem('waiter_user');
-        if (!session) {
+        if (!initialWaiter) {
             navigate('/login');
             return;
         }
-        setWaiter(JSON.parse(session));
 
         const load = async () => {
             const data = await api.getTables();
@@ -90,7 +89,7 @@ const Floor = () => {
             .subscribe();
 
         return () => supabase.removeChannel(channel);
-    }, [navigate]);
+    }, [navigate, initialWaiter]);
 
     const handleLogout = async () => {
         if (!waiter) return;

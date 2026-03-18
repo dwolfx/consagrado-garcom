@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { api, supabase } from '../services/api';
 import { ArrowLeft, UserPlus, Search, Receipt, CheckCircle, Trash2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 const TablePeople = () => {
     const { id } = useParams(); // Start using ID as table ID
@@ -9,11 +9,7 @@ const TablePeople = () => {
     const [table, setTable] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Local state for adding people (Mock for now as backend doesn't support Guest List yet)
-    const [mode, setMode] = useState('view'); // view, add-guest, add-cpf
-    const [inputValue, setInputValue] = useState('');
-
-    const loadTable = async () => {
+    const loadTable = useCallback(async () => {
         try {
             const data = await api.getTable(id);
             setTable(data);
@@ -22,7 +18,7 @@ const TablePeople = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [id]);
 
     useEffect(() => {
         loadTable();
@@ -33,7 +29,7 @@ const TablePeople = () => {
             .subscribe();
 
         return () => supabase.removeChannel(channel);
-    }, [id]);
+    }, [id, loadTable]);
 
     const [serviceFeeOption, setServiceFeeOption] = useState(10); // 8, 10, or 13
 

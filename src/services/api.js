@@ -76,7 +76,7 @@ export const api = {
 
     // Establishments
     getEstablishments: async () => {
-        let { data, error } = await supabase
+        let { data } = await supabase
             .from('establishments')
             .select('*');
         return data || [];
@@ -86,7 +86,7 @@ export const api = {
     login: async (email, password) => {
         // For this demo, we are doing simple table lookup. 
         // In production, use supabase.auth.signInWithPassword()
-        let { data, error } = await supabase
+        let { data } = await supabase
             .from('users')
             .select('*')
             .eq('email', email)
